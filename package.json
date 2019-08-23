@@ -1,0 +1,73 @@
+{
+  "name": "budget",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@babel/core": "latest",
+    "@babel/plugin-proposal-class-properties": "latest",
+    "@babel/plugin-proposal-decorators": "latest",
+    "@babel/preset-env": "latest",
+    "@babel/preset-react": "latest",
+    "@material-ui/core": "latest",
+    "@material-ui/icons": "latest",
+    "@material-ui/lab": "latest",
+    "@material-ui/styles": "latest",
+    "axios": "latest",
+    "babel-loader": "latest",
+    "babel-plugin-transform-imports": "latest",
+    "classnames": "latest",
+    "css-loader": "latest",
+    "enzyme": "latest",
+    "enzyme-adapter-react-16": "latest",
+    "file-loader": "latest",
+    "handlebars": "latest",
+    "history": "latest",
+    "jest": "latest",
+    "nodemon": "latest",
+    "notistack": "latest",
+    "prop-types": "latest",
+    "react": "latest",
+    "react-currency-format": "^1.0.0",
+    "react-dom": "latest",
+    "react-hot-loader": "latest",
+    "react-router-dom": "latest",
+    "react-select": "latest",
+    "react-sortable-hoc": "latest",
+    "socket.io": "latest",
+    "socket.io-client": "latest",
+    "socket.io-react": "latest",
+    "style-loader": "latest",
+    "typeface-roboto": "latest",
+    "url-loader": "latest",
+    "webfontloader": "latest",
+    "webpack": "latest",
+    "webpack-cli": "latest",
+    "webpack-dev-server": "latest"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "webpack -p --progress --config webpack.config.js",
+    "dev": "nodemon -w webpack.config.js -x webpack-dev-server -- --progress -d --config webpack.config.js",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "watch": "webpack --progress -d --config webpack.config.js --watch"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "webpack-cli": "^3.3.6"
+  }
+}
