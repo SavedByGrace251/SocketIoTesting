@@ -9,7 +9,7 @@ const socket = io.connect("ws://"+window.location.hostname+":1005");
 
 ReactDOM.render(
 	<SocketProvider socket={socket}>
-		<SnackbarProvider maxSnack={5}
+		<SnackbarProvider maxSnack={3}
 			anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
 			<App />
 		</SnackbarProvider>

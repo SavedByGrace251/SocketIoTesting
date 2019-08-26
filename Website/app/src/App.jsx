@@ -54,7 +54,7 @@ class App extends Component {
 
 	constructor(props) {
 		super(props)
-		props.socket.on(CONNECT, () => {
+		props.socket.on(CONNECT, (client) => {
 			this.reconnected();
 		});
 		props.socket.on(DISCONNECT, () => {

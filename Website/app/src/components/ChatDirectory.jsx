@@ -6,33 +6,17 @@ import { withSnackbar } from "notistack";
 import toastMessage from "../functions/toaster";
 import { ROOM_LIST, ENTER_ROOM, LEAVE_ROOM } from '../events';
 
-
 const styles = {
-	root: {
-		margin: 0,
-		width: '100%',
-		height: '100%',
-		overflow: 'hidden'
-	},
-	content: {
-		margin: 0,
-		flex: 1,
-		overflowX: 'auto'
-	},
-	toolbar: {
+	card: {
 		padding: 8,
-		background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-		color: 'white',
-	},
-	chatDirectory: {
-		margin: 8,
 		flex: 20,
 		height: "100%",
 	},
-	chatView: {
-		margin: 8,
-		flex: 80,
-		height: "100%",
+	directory: {
+		marginTop: 8,
+		marginBottom: 8,
+		flexWrap: 'nowrap',
+		overflow: 'auto',
 	},
 	title: {
 		fontSize: 20,
@@ -44,24 +28,24 @@ const styles = {
 	buttonName: {
 		fontSize: 14,
 	},
+	flex: {
+		flex: 1,
+	},
 }
 
-const ChatRoomButtom = withStyles(styles)(buttonComp)
-function buttonComp(props) {
-	return (
-		<Button variant="contained"
-			color={props.active ? "primary" : "default"}
-			className={props.classes.chatRoomButton} onClick={() => {props.func(props.chatRoom)}}>
-			<Typography className={props.classes.buttonName}>
-				{props.chatRoom.name}
-			</Typography>
-		</Button>
-	)
-}
+const ChatRoomButtom = withStyles(styles)((props) => {
+	return <Button variant="contained"
+		color={props.active ? "primary" : "default"}
+		className={props.classes.chatRoomButton} onClick={() => {props.func(props.chatRoom)}}>
+		<Typography className={props.classes.buttonName}>
+			{props.chatRoom.name}
+		</Typography>
+	</Button>
+})
 
 class ChatDirectory extends Component {
 	state = { chatRooms: [] }
-    classes = this.props.classes
+
 	constructor(props) {
 		super(props)
 		const { socket } = props
@@ -74,9 +58,6 @@ class ChatDirectory extends Component {
 			socket.emit(ENTER_ROOM, payload[0])
 		});
 	}
-	
-	componentDidMount() {
-	}
 
 	updateActiveChat(chatRoom) {
 		this.props.socket.emit(LEAVE_ROOM)
@@ -85,28 +66,25 @@ class ChatDirectory extends Component {
 	}
 
 	render() {
-		return (
-			<Grid item className={this.classes.chatDirectory}>
-				<Card>
-					<CardContent>
-						<Typography className={this.classes.title} gutterBottom>
-							Chat Rooms
+		var classes = this.props.classes
+		return <Grid item className={classes.card}>
+			<Card style={{ height: '100%' }}>
+				<Grid style={{ padding: 16, height: '100%' }} container direction="column">
+					<Typography className={classes.title} gutterBottom>
+						Chat Rooms
 					</Typography>
-						<Divider />
-						<Grid container direction="column" justify="center" alignContent="stretch" style={{ marginTop: 8 }}>
-							{this.state.chatRooms.map((chatRoom, idx) => {
-									return <ChatRoomButtom key={idx}
-										func={this.updateActiveChat}
-										chatRoom={chatRoom}
-										active={this.props.activeChat.id === chatRoom.id} />
-								})
-							}
-						</Grid>
-					</CardContent>
-				</Card>
-			</Grid>
-		)
+					<Divider />
+					<Grid container direction="column" alignContent="stretch"
+						style={{ marginTop: 8 }} className={[classes.flex, classes.directory].join(" ")}>
+						{this.state.chatRooms.map((chatRoom, idx) => {
+							return <ChatRoomButtom key={idx} func={this.updateActiveChat}
+								chatRoom={chatRoom} active={this.props.activeChat.id === chatRoom.id} />
+						})}
+					</Grid>
+				</Grid>
+			</Card>
+		</Grid>
 	}
 }
 
-export default withStyles(styles)(withSnackbar(socketConnect(ChatDirectory)))
+export default withStyles(styles, {name:"ChatDirectory"})(withSnackbar(socketConnect(ChatDirectory)))

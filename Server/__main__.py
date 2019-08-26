@@ -16,6 +16,15 @@ __ChatRooms__ = [
 	{"name": "Chat Room 5", "id": str(UUID())},
 	{"name": "Chat Room 6", "id": str(UUID())},
 	{"name": "Chat Room 7", "id": str(UUID())},
+	{"name": "Chat Room 8", "id": str(UUID())},
+	{"name": "Chat Room 9", "id": str(UUID())},
+	{"name": "Chat Room 10", "id": str(UUID())},
+	{"name": "Chat Room 11", "id": str(UUID())},
+	{"name": "Chat Room 12", "id": str(UUID())},
+	{"name": "Chat Room 13", "id": str(UUID())},
+	{"name": "Chat Room 14", "id": str(UUID())},
+	{"name": "Chat Room 15", "id": str(UUID())},
+	{"name": "Chat Room 16", "id": str(UUID())},
 ]
 
 __RoomState__ = {}
@@ -23,6 +32,7 @@ __RoomState__ = {}
 @sio.event
 def connect(sid, env):
 	sio.emit('room_list', __ChatRooms__, to=sid)
+	sio.emit('get_id', sid, to=sid)
 
 @sio.event
 def disconnect(sid):
@@ -45,7 +55,7 @@ def leave_room(sid):
 @sio.event
 def send_message(sid, data):
 	print('message sent:', sid, data)
-	sio.emit("recv_message", {'message': data['message'], sid: sid}, room=data['room']['id'])
+	sio.emit("recv_message", {'message': data['message'], "sid": sid}, room=data['room']['id'])
 
 if __name__ == "__main__":
 	app.run(host="0.0.0.0", port=1005, debug=True, threaded=True)
