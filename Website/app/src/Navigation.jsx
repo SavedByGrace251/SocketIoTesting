@@ -15,7 +15,7 @@ function Navigation(props) {
 		<AppBar position="relative">
 			<Toolbar className={props.classes.toolbar}>
 				<Grid container direction="row" alignContent="center">
-					<Typography variant="h3">Budget</Typography>
+					<Typography variant="h3">Chat</Typography>
 				</Grid>
 			</Toolbar>
 		</AppBar>

@@ -5,7 +5,7 @@ import { SocketProvider } from 'socket.io-react';
 import io from 'socket.io-client';
 import { SnackbarProvider } from 'notistack';
 
-const socket = io.connect("ws://192.168.1.6:1005");
+const socket = io.connect("ws://"+window.location.hostname+":1005");
 
 ReactDOM.render(
 	<SocketProvider socket={socket}>
