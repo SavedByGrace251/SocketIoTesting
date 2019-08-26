@@ -7,6 +7,7 @@ import ChatDirectory from "./components/ChatDirectory";
 import ChatView from "./components/ChatView";
 import Navigation from './Navigation';
 import toastMessage from "./functions/toaster";
+import { CONNECT, DISCONNECT, SEND_MESSAGE } from "./events";
 
 const styles = {
 	root: {
@@ -53,13 +54,13 @@ class App extends Component {
 
 	constructor(props) {
 		super(props)
-		props.socket.on('connect', () => {
+		props.socket.on(CONNECT, () => {
 			this.reconnected();
 		});
-		props.socket.on('disconnect', () => {
+		props.socket.on(DISCONNECT, () => {
 			this.connectionError();
 		});
-		props.socket.on('send_message', (data) => {
+		props.socket.on(SEND_MESSAGE, (data) => {
 			toastMessage(this.props.enqueueSnackbar, data);
 		});
 		this.updateActiveChat = function(chat) {

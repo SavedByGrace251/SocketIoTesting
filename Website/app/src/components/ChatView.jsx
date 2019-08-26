@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
 import { Paper, Typography, Grid, Card, CardContent, Table, TableHead, TableBody, TableFooter, TableCell, TableRow, Toolbar, AppBar, Divider, Button, CardActionArea, TextField, CardActions } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
+import { Send } from "@material-ui/icons";
 import { SocketProvider, socketConnect } from 'socket.io-react';
 import { withSnackbar, SnackbarProvider } from "notistack";
+import { SEND_MESSAGE, RECV_MESSAGE } from '../events';
+import toastMessage from '../functions/toaster';
 
 
 const styles = {
@@ -25,13 +28,36 @@ const styles = {
 	},
 }
 
-class ChatView extends Component {	
-	componentDidMount() {
-		this.props.socket.emit("join_room", )
+class ChatView extends Component {
+	state = { message: '', messages: [] }
+
+	constructor(props) {
+		super(props)
+		this.updateMessage = this.updateMessage.bind(this);
+		this.keyPressed = this.keyPressed.bind(this);
+		this.sendMessage = this.sendMessage.bind(this);
+
+		props.socket.on(RECV_MESSAGE, (payload) => {
+			toastMessage(props.enqueueSnackbar, payload.message)
+			this.setState({ messages: [...this.state.messages, payload.message] })
+		})
 	}
 
-	sendMessage(message) {
-		this.props.socket.emit("send_message", { message: message, room: this.props.room })
+	keyPressed(e) {
+		if (e.key === 'Enter') {
+			console.log("enter key detected")
+			this.sendMessage()
+		}
+	}
+
+	sendMessage() {
+		console.log("Sending Message")
+		this.props.socket.emit(SEND_MESSAGE, { message: this.state.message, room: this.props.chat })
+		this.setState({message: ''})
+	}
+
+	updateMessage(event) {
+		this.setState({ message: event.target.value })
 	}
 
 	render() {
@@ -43,17 +69,28 @@ class ChatView extends Component {
 							{this.props.chat.name}
 						</Typography>
 						<Divider />
-						<Grid>
-							<Typography className={this.props.classes.chatMessage} gutterBottom>
-								Chat View
-							</Typography>
+						<Grid container direction="column-reverse">
+							{this.state.messages.map(
+								(message, idx) => {
+									return (
+									<Paper key={idx} className={this.props.classes.chatMessage}>
+										<Typography>{message}</Typography>
+									</Paper>
+									)
+								}
+							)}
+							
 						</Grid>
 					</CardContent>
 					<CardActions>
-						<Grid container direction="row">
-							<Typography>Message:</Typography>
-							<TextField className={this.props.classes.flex} />
-							<Button>Send</Button>
+						<Grid container direction="row" style={{ padding: 8 }}>
+							<TextField autoFocus placeholder='Message' 
+								className={this.props.classes.flex} 
+								onKeyPress={this.keyPressed} 
+								onChange={this.updateMessage} 
+								value={this.state.message}
+								/>
+							<Button variant="contained" color="primary" onClick={this.sendMessage}>Send <Send /></Button>
 						</Grid>
 					</CardActions>
 				</Card>
@@ -62,4 +99,4 @@ class ChatView extends Component {
 	}
 }
 
-export default withStyles(styles)(socketConnect(ChatView))
+export default withStyles(styles)(withSnackbar(socketConnect(ChatView)))

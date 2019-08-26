@@ -18,30 +18,34 @@ __ChatRooms__ = [
 	{"name": "Chat Room 7", "id": str(UUID())},
 ]
 
+__RoomState__ = {}
+
 @sio.event
 def connect(sid, env):
-	print('connected:', sid)
-	print('environment:', env)
 	sio.emit('room_list', __ChatRooms__, to=sid)
 
 @sio.event
 def disconnect(sid):
 	print('disconnected:', sid)
+	leave_room(sid)
 
 @sio.event
 def enter_room(sid, room):
-	print('entering room:', sid, room)
-	sio.enter_room(sid, room)
+	print('###########################\nentering room:', sid, room['id'])
+	__RoomState__[sid] = room['id']
+	sio.enter_room(sid, room['id'])
 
 @sio.event
-def leave_room(sid, room):
-	print('leaving room:', sid, room)
-	sio.leave_room(sid, room)
+def leave_room(sid):
+	roomId = __RoomState__[sid]
+	print('###########################\nleaving room:', sid, roomId)
+	sio.leave_room(sid, roomId)
+	__RoomState__[sid] = ''
 
 @sio.event
 def send_message(sid, data):
 	print('message sent:', sid, data)
-	sio.emit("recv_message", data['message'], room=data['room'])
+	sio.emit("recv_message", {'message': data['message'], sid: sid}, room=data['room']['id'])
 
 if __name__ == "__main__":
 	app.run(host="0.0.0.0", port=1005, debug=True, threaded=True)

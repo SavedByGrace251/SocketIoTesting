@@ -4,6 +4,7 @@ import { withStyles } from '@material-ui/styles';
 import { socketConnect } from 'socket.io-react';
 import { withSnackbar } from "notistack";
 import toastMessage from "../functions/toaster";
+import { ROOM_LIST, ENTER_ROOM, LEAVE_ROOM } from '../events';
 
 
 const styles = {
@@ -64,15 +65,23 @@ class ChatDirectory extends Component {
 	constructor(props) {
 		super(props)
 		const { socket } = props
+		this.updateActiveChat = this.updateActiveChat.bind(this)
 
-		socket.on('room_list', (payload) => {
+		socket.on(ROOM_LIST, (payload) => {
 			toastMessage(this.props.enqueueSnackbar, {type: "success", message:"Data Loaded"});
 			this.setState({ chatRooms: payload })
 			props.updateActiveChat(payload[0])
+			socket.emit(ENTER_ROOM, payload[0])
 		});
 	}
 	
 	componentDidMount() {
+	}
+
+	updateActiveChat(chatRoom) {
+		this.props.socket.emit(LEAVE_ROOM)
+		this.props.updateActiveChat(chatRoom)
+		this.props.socket.emit(ENTER_ROOM, chatRoom)
 	}
 
 	render() {
@@ -87,7 +96,7 @@ class ChatDirectory extends Component {
 						<Grid container direction="column" justify="center" alignContent="stretch" style={{ marginTop: 8 }}>
 							{this.state.chatRooms.map((chatRoom, idx) => {
 									return <ChatRoomButtom key={idx}
-										func={this.props.updateActiveChat}
+										func={this.updateActiveChat}
 										chatRoom={chatRoom}
 										active={this.props.activeChat.id === chatRoom.id} />
 								})
