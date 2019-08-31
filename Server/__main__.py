@@ -45,7 +45,7 @@ def leave_room(sid):
 
 @sio.event
 def send_message(sid, data):
-	print('message sent:', sid, data)
+	print('message sent:', {'message': data['message'], "sid": sid})
 	sio.emit("recv_message", {'message': data['message'], "sid": sid}, room=data['room']['id'])
 
 if __name__ == "__main__":
