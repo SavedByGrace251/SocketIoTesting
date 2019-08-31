@@ -1,7 +1,9 @@
-from socketio import Server, WSGIApp
-from flask import Flask
 import json
+import sys
 from uuid import uuid4 as UUID
+
+from flask import Flask
+from socketio import Server, WSGIApp
 
 sio = Server(cors_allowed_origins='*')
 app = Flask(__name__)
@@ -14,17 +16,6 @@ __ChatRooms__ = [
 	{"name": "Chat Room 3", "id": str(UUID())},
 	{"name": "Chat Room 4", "id": str(UUID())},
 	{"name": "Chat Room 5", "id": str(UUID())},
-	{"name": "Chat Room 6", "id": str(UUID())},
-	{"name": "Chat Room 7", "id": str(UUID())},
-	{"name": "Chat Room 8", "id": str(UUID())},
-	{"name": "Chat Room 9", "id": str(UUID())},
-	{"name": "Chat Room 10", "id": str(UUID())},
-	{"name": "Chat Room 11", "id": str(UUID())},
-	{"name": "Chat Room 12", "id": str(UUID())},
-	{"name": "Chat Room 13", "id": str(UUID())},
-	{"name": "Chat Room 14", "id": str(UUID())},
-	{"name": "Chat Room 15", "id": str(UUID())},
-	{"name": "Chat Room 16", "id": str(UUID())},
 ]
 
 __RoomState__ = {}
@@ -58,4 +49,4 @@ def send_message(sid, data):
 	sio.emit("recv_message", {'message': data['message'], "sid": sid}, room=data['room']['id'])
 
 if __name__ == "__main__":
-	app.run(host="0.0.0.0", port=1005, debug=True, threaded=True)
+	app.run(host="0.0.0.0", port=5001, debug=True, threaded=True)

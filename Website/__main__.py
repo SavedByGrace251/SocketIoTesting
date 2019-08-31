@@ -1,4 +1,5 @@
 import os
+import sys
 
 from flask import Flask, render_template
 
@@ -13,9 +14,13 @@ def add_header(response):
 	response.cache_control.no_store = True
 	return response
 
+@app.route('/api')
+def getAPI():
+	return 
+
 @app.route("/")
 def home():
 	return render_template("index.html")
 
 if __name__ == "__main__":
-	app.run(host="0.0.0.0", port=1004, debug=True)
+	app.run(host="0.0.0.0", port=5000, debug=True)
