@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Paper, Typography, Grid, Card, CardContent, Table, TableHead, TableBody, TableFooter, TableCell, TableRow, Toolbar, AppBar, Divider, Button, CardActionArea, TextField, CardActions } from '@material-ui/core';
+import { Paper, Typography, Grid, Card, CardContent, Table, TableHead, TableBody, TableFooter, TableCell, TableRow, Toolbar, AppBar, Divider, Button, CardActionArea, TextField, CardActions, Tooltip } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
 import { Send } from "@material-ui/icons";
 import { SocketProvider, socketConnect } from 'socket.io-react';
@@ -43,12 +43,73 @@ const styles = {
 		fontSize: 14,
 		margin: 4,
 		padding: 4,
+		paddingRight: 8,
+		paddingLeft: 8,
 		maxWidth: "60%",
+	},
+	chatUser: {
+		borderRadius: "50%",
+		margin: 4,
+		padding: 4,
+		paddingRight: 8,
+		paddingLeft: 8,
 	},
 	flex: {
 		flex: 1,
 	},
 }
+
+function getTextColor(hexCode) {
+	var r = parseInt(hexCode.slice(0,2), 16)/255;
+	r = r <= 0.03928 ? r/12.92 : ((r+0.055)/1.055)**2.4
+	var g = parseInt(hexCode.slice(2,4), 16)/255;
+	g = g <= 0.03928 ? g/12.92 : ((g+0.055)/1.055)**2.4
+	var b = parseInt(hexCode.slice(4,6), 16)/255;
+	b = b <= 0.03928 ? b/12.92 : ((b+0.055)/1.055)**2.4
+	var L = (0.2126 * r) + (0.7152 * g) + (0.0722 * b);
+	var textColor = L > 0.179 ? "black" : "white";
+	return textColor
+}
+
+const MyChatMessage = withStyles(styles, { name: "MyChatMessage" })((props) => {
+	var { classes } = props;
+	return <Grid container direction="row">
+		<div className={classes.flex} />
+		<Paper className={classes.chatMessage + " " + classes.myMessage}>
+			<Typography color='inherit'>{props.message.message}</Typography>
+		</Paper>
+	</Grid>
+})
+
+const ChatMessageUser = withStyles(styles, { name: 'ChatMesssageUser' })((props) => {
+	var { classes } = props;
+	var userId = props.userSid.slice(0, 2);
+	return <Tooltip title={props.userSid} placement="top" aria-label="add">
+		<Paper className={classes.chatUser} style={{backgroundColor: "#"+props.color, color: props.textColor}}>
+			<Typography>{userId}</Typography>
+		</Paper>
+	</Tooltip>
+})
+
+const OtherChatMessage = withStyles(styles, {name: "OtherChatMessage"})((props) => {
+	var { classes } = props;
+	var color = props.message.sid.slice(0,6);
+	var textColor = getTextColor(color);
+	return <Grid container direction="row">
+		<ChatMessageUser textColor={textColor} color={color} userSid={props.message.sid} />
+		<Paper className={classes.chatMessage} style={{backgroundColor: "#"+color, color: textColor}}>
+			<Typography color='inherit'>{props.message.message}</Typography>
+		</Paper>
+	</Grid>
+})
+
+function ChatMessage(props) {
+	if (props.message.sid === props.userSid) {
+		return <MyChatMessage {...props} />
+	} else {
+		return <OtherChatMessage {...props} />
+	}
+};
 
 class ChatView extends Component {
 	messagesEnd = '';
@@ -66,11 +127,11 @@ class ChatView extends Component {
 		props.socket.on(RECV_MESSAGE, (payload) => {
 			toastMessage(props.enqueueSnackbar, payload.message)
 			var obj = {}
-			var prevMessages = []
+			var roomMessages = []
 			if (this.state[this.props.chat.id]) {
-				prevMessages = this.state[this.props.chat.id]
+				roomMessages = this.state[this.props.chat.id]
 			}
-			obj[this.props.chat.id] = [...prevMessages, payload]
+			obj[this.props.chat.id] = [...roomMessages, payload]
 			this.setState(obj)
 			this.scrollToBottom()
 		})
@@ -113,12 +174,9 @@ class ChatView extends Component {
 						<Divider />
 						<Grid container direction="column"
 							className={[classes.flex, classes.messages].join(" ")}>
-							{messages.map((message, idx) => {
-								var messageClass = message.sid === this.state.sid ? classes.myMessage : classes.otherMessage
-								return <Paper key={idx} className={classes.chatMessage + " " + messageClass}>
-									<Typography color='inherit'>{message.message}</Typography>
-								</Paper>
-							})}
+							{messages.map((message, idx) =>
+								<ChatMessage key={idx} userSid={this.state.sid} message={message} />
+							)}
 							<div ref={(elem) => { this.messagesEnd = elem }}></div>
 						</Grid>
 						<Divider />
