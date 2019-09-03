@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { Paper, Typography, Grid, Card, CardContent, Table, TableHead, TableBody, TableFooter, TableCell, TableRow, Toolbar, AppBar, Divider, Button } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
-import { SocketProvider, socketConnect } from 'socket.io-react';
-import { withSnackbar, SnackbarProvider } from "notistack";
+import { socketConnect } from 'socket.io-react';
+import { withSnackbar } from "notistack";
 import ChatDirectory from "./components/ChatDirectory";
 import ChatView from "./components/ChatView";
 import Navigation from './Navigation';
