@@ -70,7 +70,7 @@ const ChatMessageUser = withStyles(styles, { name: 'ChatMesssageUser' })((props)
 	var userId = props.userSid.slice(0, 2);
 	return <Tooltip title={props.userSid} placement="top" aria-label="add">
 		<Paper className={classes.chatUser} style={{
-			background: "linear-gradient(45deg, #" + fadeColor(props.color, 40) + ", #" + fadeColor(props.color, -40) + ")",
+			background: "linear-gradient(45deg, #" + fadeColor(props.color, -40) + ", #" + fadeColor(props.color, 40) + ")",
 			color: props.textColor}}>
 			<Typography>{userId}</Typography>
 		</Paper>
@@ -85,7 +85,7 @@ const OtherChatMessage = withStyles(styles, {name: "OtherChatMessage"})((props) 
 		<ChatMessageUser textColor={textColor} color={color} userSid={props.message.sid} />
 		<Paper className={classes.chatMessage} 
 			style={{
-				background: "linear-gradient(45deg, #" + fadeColor(color, 40) + ", #" + fadeColor(color, -40) + ")", 
+				background: "linear-gradient(45deg, #" + fadeColor(color, -40) + ", #" + fadeColor(color, 40) + ")", 
 				color: textColor
 			}}>
 			<Typography color='inherit'>{props.message.message}</Typography>

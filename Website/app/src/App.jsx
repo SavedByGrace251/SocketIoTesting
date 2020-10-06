@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Paper, Typography, Grid, Card, CardContent, Table, TableHead, TableBody, TableFooter, TableCell, TableRow, Toolbar, AppBar, Divider, Button } from '@material-ui/core';
+import { Paper, Typography, Grid, Card, CardContent, Table, TableHead, TableBody, TableFooter, TableCell, TableRow, Toolbar, AppBar, Divider, Button, Drawer } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
 import { socketConnect } from 'socket.io-react';
 import { withSnackbar } from "notistack";
@@ -7,7 +7,7 @@ import ChatDirectory from "./components/ChatDirectory";
 import ChatView from "./components/ChatView";
 import Navigation from './Navigation';
 import toastMessage from "./functions/toaster";
-import { CONNECT, DISCONNECT, SEND_MESSAGE } from "./events";
+import { CONNECT, DISCONNECT, SEND_MESSAGE, ROOM_LIST, LEAVE_ROOM, ENTER_ROOM } from "./events";
 
 const styles = {
 	root: {
@@ -25,6 +25,10 @@ const styles = {
 		padding: 8,
 		background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
 		color: 'white',
+	},
+	drawer: {
+		width: 240,
+		flexShrink: 0,
 	},
 	chatDirectory: {
 		margin: 8,
@@ -47,9 +51,7 @@ const styles = {
 }
 
 class App extends Component {
-	state = {
-		activeChat: {},
-	}
+	state = {}
 	classes = this.props.classes
 
 	constructor(props) {
@@ -63,8 +65,18 @@ class App extends Component {
 		props.socket.on(SEND_MESSAGE, (data) => {
 			toastMessage(this.props.enqueueSnackbar, data);
 		});
-		this.updateActiveChat = function(chat) {
-			this.setState({ activeChat: chat })
+		props.socket.on(ROOM_LIST, (payload) => {
+			toastMessage(this.props.enqueueSnackbar, {type: "success", message:"Data Loaded"});
+			this.setState({ chatRooms: payload })
+		});
+		this.updateActiveChat = function (chat) {
+			props.socket.emit(LEAVE_ROOM)
+			this.setState({ activeChat: chat, openDrawer: false })
+			props.socket.emit(ENTER_ROOM, chat)
+		}.bind(this)
+
+		this.toggleDrawer = function (state) { 
+			this.setState({ openDrawer: state })
 		}.bind(this)
 	}
 
@@ -95,12 +107,16 @@ class App extends Component {
 	render() {
 		return (
 			<Grid container direction="column" className={this.classes.root}>
-				<Navigation />
+				<Navigation toggleDrawer={this.toggleDrawer} />
 				<Grid item className={this.classes.content} container
 					direction="row" justify="center"
 					alignContent='stretch'>
-					<ChatDirectory updateActiveChat={this.updateActiveChat} 
-						activeChat={this.state.activeChat} />
+					<Drawer open={this.state.openDrawer} onClose={() => {this.toggleDrawer(false)}}>
+						<ChatDirectory
+							chatRooms={this.state.chatRooms}
+							updateActiveChat={this.updateActiveChat}
+							activeChat={this.state.activeChat} />
+					</Drawer>
 					<ChatView chat={this.state.activeChat} />
 				</Grid>
 			</Grid>

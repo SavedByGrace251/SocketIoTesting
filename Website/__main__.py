@@ -14,10 +14,6 @@ def add_header(response):
 	response.cache_control.no_store = True
 	return response
 
-@app.route('/api')
-def getAPI():
-	return 
-
 @app.route("/")
 def home():
 	return render_template("index.html")

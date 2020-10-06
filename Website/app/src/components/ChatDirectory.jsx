@@ -23,7 +23,7 @@ const styles = {
 	},
 	chatRoomButton: {
 		marginTop: 8,
-		marginBottom: 8, 
+		marginBottom: 8,
 	},
 	buttonName: {
 		fontSize: 14,
@@ -36,55 +36,29 @@ const styles = {
 const ChatRoomButtom = withStyles(styles)((props) => {
 	return <Button variant="contained"
 		color={props.active ? "primary" : "default"}
-		className={props.classes.chatRoomButton} onClick={() => {props.func(props.chatRoom)}}>
+		className={props.classes.chatRoomButton} onClick={() => { props.func(props.chatRoom) }}>
 		<Typography className={props.classes.buttonName}>
 			{props.chatRoom.name}
 		</Typography>
 	</Button>
 })
 
-class ChatDirectory extends Component {
-	state = { chatRooms: [] }
-
-	constructor(props) {
-		super(props)
-		const { socket } = props
-		this.updateActiveChat = this.updateActiveChat.bind(this)
-
-		socket.on(ROOM_LIST, (payload) => {
-			toastMessage(this.props.enqueueSnackbar, {type: "success", message:"Data Loaded"});
-			this.setState({ chatRooms: payload })
-			props.updateActiveChat(payload[0])
-			socket.emit(ENTER_ROOM, payload[0])
-		});
-	}
-
-	updateActiveChat(chatRoom) {
-		this.props.socket.emit(LEAVE_ROOM)
-		this.props.updateActiveChat(chatRoom)
-		this.props.socket.emit(ENTER_ROOM, chatRoom)
-	}
-
-	render() {
-		var classes = this.props.classes
-		return <Grid item className={classes.card}>
-			<Card style={{ height: '100%' }}>
-				<Grid style={{ padding: 16, height: '100%' }} container direction="column">
-					<Typography className={classes.title} gutterBottom>
-						Chat Rooms
+function ChatDirectory({ classes, chatRooms, updateActiveChat, activeChat }) {
+	return (
+		<Grid style={{ padding: 16, height: '100%', width: 240 }} container direction="column">
+			<Typography className={classes.title} gutterBottom>
+				Chat Rooms
 					</Typography>
-					<Divider />
-					<Grid container direction="column" alignContent="stretch"
-						style={{ marginTop: 8 }} className={[classes.flex, classes.directory].join(" ")}>
-						{this.state.chatRooms.map((chatRoom, idx) => {
-							return <ChatRoomButtom key={idx} func={this.updateActiveChat}
-								chatRoom={chatRoom} active={this.props.activeChat.id === chatRoom.id} />
-						})}
-					</Grid>
-				</Grid>
-			</Card>
+			<Divider />
+			<Grid container direction="column" alignContent="stretch"
+				style={{ marginTop: 8 }} className={[classes.flex, classes.directory].join(" ")}>
+				{chatRooms.map((chatRoom, idx) => {
+					return <ChatRoomButtom key={idx} func={updateActiveChat}
+						chatRoom={chatRoom} active={activeChat !== undefined ? activeChat.id === chatRoom.id : false} />
+				})}
+			</Grid>
 		</Grid>
-	}
+	)
 }
 
-export default withStyles(styles, {name:"ChatDirectory"})(withSnackbar(socketConnect(ChatDirectory)))
+export default withStyles(styles, { name: "ChatDirectory" })(withSnackbar(ChatDirectory))

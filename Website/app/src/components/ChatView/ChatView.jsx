@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import { Typography, Grid, Card, Divider, Button, TextField } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
 import { Send } from "@material-ui/icons";
@@ -9,6 +9,9 @@ import ChatMessage from './ChatMessage';
 import { GET_ID, RECV_MESSAGE, SEND_MESSAGE } from '../../events';
 
 const styles = {
+	buttonText: {
+		paddingRight: 4,
+	},
 	card: {
 		padding: 8,
 		flex: 80,
@@ -60,16 +63,66 @@ const styles = {
 	},
 }
 
+const ChatMessageForm = withStyles(styles, { name: "ChatMessageForm" })(socketConnect(({ classes, socket, room }) => {
+
+	const [message, setMessage] = useState('')
+
+	const keyPressed = (e) => {
+		if (e.key === 'Enter') {
+			sendMessage()
+		}
+	}
+
+	const sendMessage = () => {
+		if (message != '') {
+			socket.emit(SEND_MESSAGE, { message: message, room: room })
+			setMessage('')
+		}
+	}
+
+	const updateMessage = (event) => {
+		setMessage(event.target.value)
+	}
+
+	return (
+		<Grid container direction="row" justify="center" className={classes.messageField}>
+			<TextField autoFocus placeholder='Message'
+				className={[classes.flex, classes.message].join(" ")}
+				onKeyPress={keyPressed}
+				onChange={updateMessage}
+				value={message} />
+			<Button variant="contained" color="primary" onClick={sendMessage}>
+				<Grid container direction="row" justify="space-between" alignItems="center">
+					<span className={classes.buttonText}>Send</span>
+					<Send />
+				</Grid>
+			</Button>
+		</Grid>
+	)
+}))
+
+const ChatViewMessageList = withStyles(styles, { name: "ChatViewMessageList" })(({ classes, messages, setMessageEnd, userSid }) => {
+	return <Grid container direction="column" className={[classes.flex, classes.messages].join(" ")}>
+		{messages.map((message, idx) =>
+			<ChatMessage key={idx} userSid={userSid} message={message} />
+		)}
+		<div ref={setMessageEnd}></div>
+	</Grid>
+})
+
+const ChatViewTitle = withStyles(styles, { name: "ChatViewTitle" })(({ classes, title }) => {
+	return <Typography className={classes.title} gutterBottom>
+		{title}
+	</Typography>
+})
 
 class ChatView extends Component {
 	messagesEnd = '';
 
 	constructor(props) {
 		super(props)
-		this.updateMessage = this.updateMessage.bind(this);
-		this.keyPressed = this.keyPressed.bind(this);
-		this.sendMessage = this.sendMessage.bind(this);
-		this.state = { message: '', sid: '' }
+		this.state = { sid: '' }
+		this.setMessageEndRef = this.setMessageEndRef.bind(this)
 
 		props.socket.on(GET_ID, (payload) => {
 			this.setState({ sid: payload })
@@ -87,58 +140,43 @@ class ChatView extends Component {
 		})
 	}
 
-	keyPressed(e) {
-		if (e.key === 'Enter') {
-			this.sendMessage()
-		}
-	}
-
-	sendMessage() {
-		if (this.state.message != '') {
-			this.props.socket.emit(SEND_MESSAGE, { message: this.state.message, room: this.props.chat })
-			this.setState({ message: '' })
-		}
-	}
-
-	updateMessage(event) {
-		this.setState({ message: event.target.value })
-	}
-
 	scrollToBottom() {
 		this.messagesEnd.scrollIntoView({ behavior: "smooth" });
 	}
 
+	setMessageEndRef(elem) {
+		this.messagesEnd = elem;
+	}
+
 	render() {
-		var classes = this.props.classes
+		const classes = this.props.classes
+		const chatSelected = this.props.chat !== undefined
 		var messages = []
-		if (this.state[this.props.chat.id]) {
-			messages = this.state[this.props.chat.id]
+		if (chatSelected) {
+			if (this.state[this.props.chat.id]) {
+				messages = this.state[this.props.chat.id]
+			}
 		}
 		return (
 			<Grid item className={classes.card}>
 				<Card style={{ height: '100%' }}>
-					<Grid style={{ padding: 16, height: '100%' }} container direction="column">
-						<Typography className={classes.title} gutterBottom>
-							{this.props.chat.name}
-						</Typography>
-						<Divider />
-						<Grid container direction="column"
-							className={[classes.flex, classes.messages].join(" ")}>
-							{messages.map((message, idx) =>
-								<ChatMessage key={idx} userSid={this.state.sid} message={message} />
-							)}
-							<div ref={(elem) => { this.messagesEnd = elem }}></div>
+					{chatSelected ?
+						<Grid style={{ padding: 16, height: '100%' }} container direction="column">
+							<ChatViewTitle title={this.props.chat.name} />
+							<Divider />
+							<ChatViewMessageList messages={messages} setMessageEnd={this.setMessageEndRef} userSid={this.state.sid} />
+							<Divider />
+							<ChatMessageForm room={this.props.chat} />
 						</Grid>
-						<Divider />
-						<Grid container direction="row" justify="center" className={classes.messageField}>
-							<TextField autoFocus placeholder='Message'
-								className={[classes.flex, classes.message].join(" ")}
-								onKeyPress={this.keyPressed}
-								onChange={this.updateMessage}
-								value={this.state.message} />
-							<Button variant="contained" color="primary" onClick={this.sendMessage}>Send <Send /></Button>
+						:
+						<Grid container justify="center" alignItems="center" style={{ height: '100%' }}>
+							<Grid item>
+								<Typography variant="h4">
+									No chat room selected.
+								</Typography>
+							</Grid>
 						</Grid>
-					</Grid>
+					}
 				</Card>
 			</Grid>
 		)
