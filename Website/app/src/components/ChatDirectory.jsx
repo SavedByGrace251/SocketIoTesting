@@ -1,10 +1,6 @@
-import React, { Component } from 'react';
-import { Typography, Grid, Card, CardContent, Divider, Button } from '@material-ui/core';
+import React from 'react';
+import { Typography, Grid, Divider, Button } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
-import { socketConnect } from 'socket.io-react';
-import { withSnackbar } from "notistack";
-import toastMessage from "../functions/toaster";
-import { ROOM_LIST, ENTER_ROOM, LEAVE_ROOM } from '../events';
 
 const styles = {
 	card: {
@@ -33,12 +29,12 @@ const styles = {
 	},
 }
 
-const ChatRoomButtom = withStyles(styles)((props) => {
+const ChatRoomButtom = withStyles(styles)(({active, classes, func, chatRoom}) => {
 	return <Button variant="contained"
-		color={props.active ? "primary" : "default"}
-		className={props.classes.chatRoomButton} onClick={() => { props.func(props.chatRoom) }}>
-		<Typography className={props.classes.buttonName}>
-			{props.chatRoom.name}
+		color={active ? "primary" : "default"}
+		className={classes.chatRoomButton} onClick={() => { func(chatRoom) }}>
+		<Typography className={classes.buttonName}>
+			{chatRoom.name}
 		</Typography>
 	</Button>
 })
@@ -61,4 +57,4 @@ function ChatDirectory({ classes, chatRooms, updateActiveChat, activeChat }) {
 	)
 }
 
-export default withStyles(styles, { name: "ChatDirectory" })(withSnackbar(ChatDirectory))
+export default withStyles(styles, { name: "ChatDirectory" })(ChatDirectory)

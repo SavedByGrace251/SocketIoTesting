@@ -1,13 +1,13 @@
-import React, { Component } from 'react';
-import { Paper, Typography, Grid, Card, CardContent, Table, TableHead, TableBody, TableFooter, TableCell, TableRow, Toolbar, AppBar, Divider, Button, Drawer } from '@material-ui/core';
+import React, { useEffect, useState } from 'react';
+import { Grid, Drawer } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
-import { socketConnect } from 'socket.io-react';
-import { withSnackbar } from "notistack";
 import ChatDirectory from "./components/ChatDirectory";
 import ChatView from "./components/ChatView";
 import Navigation from './Navigation';
-import toastMessage from "./functions/toaster";
-import { CONNECT, DISCONNECT, SEND_MESSAGE, ROOM_LIST, LEAVE_ROOM, ENTER_ROOM } from "./events";
+import { SocketEvent } from './constants';
+import { useSocketIO } from './services';
+import { useSnackbar } from 'notistack';
+import { toastMessage } from './functions/toaster';
 
 const styles = {
 	root: {
@@ -50,78 +50,56 @@ const styles = {
 	},
 }
 
-class App extends Component {
-	state = {}
-	classes = this.props.classes
+function App(props) {
 
-	constructor(props) {
-		super(props)
-		props.socket.on(CONNECT, (client) => {
-			this.reconnected();
-		});
-		props.socket.on(DISCONNECT, () => {
-			this.connectionError();
-		});
-		props.socket.on(SEND_MESSAGE, (data) => {
-			toastMessage(this.props.enqueueSnackbar, data);
-		});
-		props.socket.on(ROOM_LIST, (payload) => {
-			toastMessage(this.props.enqueueSnackbar, {type: "success", message:"Data Loaded"});
-			this.setState({ chatRooms: payload })
-		});
-		this.updateActiveChat = function (chat) {
-			props.socket.emit(LEAVE_ROOM)
-			this.setState({ activeChat: chat, openDrawer: false })
-			props.socket.emit(ENTER_ROOM, chat)
-		}.bind(this)
+	const { socket, connected } = useSocketIO();
+	const { enqueueSnackbar } = useSnackbar();
 
-		this.toggleDrawer = function (state) { 
-			this.setState({ openDrawer: state })
-		}.bind(this)
-	}
+	const [chatRooms, setChatRooms] = useState([])
+	const [activeChat, setActiveChat] = useState(undefined);
+	const [openDrawer, setOpenDrawer] = useState(false);
+	const classes = props.classes;
 
-	detectConnection() {
-		if (this.props.socket.connected) {
-			this.reconnected()
-		} else {
-			this.connectionError()
+	const updateActiveChat = (chat) => {
+		socket.emit(SocketEvent.leaveRoom);
+		setActiveChat(chat);
+		setOpenDrawer(false);
+		socket.emit(SocketEvent.enterRoom, chat)
+	};
+
+	useEffect(() => {
+		if (connected && enqueueSnackbar) {
+			socket.on(SocketEvent.sendMessage, (data) => {
+				toastMessage(enqueueSnackbar, data);
+			});
+			socket.on(SocketEvent.roomList, (payload) => {
+				toastMessage(enqueueSnackbar, {type: "success", message: "Data Loaded"});
+				setChatRooms(payload)
+			});
 		}
+	}, [socket, connected, enqueueSnackbar])
+
+	const toggleOpenDrawer = () => {
+		socket.emit(SocketEvent.getRooms, {});
+		setOpenDrawer(true);
 	}
 
-	connectionError() {
-		const key = this.props.enqueueSnackbar('No connection!', {
-			variant: 'error',
-			persist: true,
-			anchorOrigin: {
-				vertical: 'bottom',
-				horizontal: 'center',
-			}
-		});
-		this.setState({ connectionKey: key })
-	}
-
-	reconnected() {
-		this.props.closeSnackbar(this.state.connectionKey);
-	}
-
-	render() {
-		return (
-			<Grid container direction="column" className={this.classes.root}>
-				<Navigation toggleDrawer={this.toggleDrawer} />
-				<Grid item className={this.classes.content} container
-					direction="row" justify="center"
-					alignContent='stretch'>
-					<Drawer open={this.state.openDrawer} onClose={() => {this.toggleDrawer(false)}}>
-						<ChatDirectory
-							chatRooms={this.state.chatRooms}
-							updateActiveChat={this.updateActiveChat}
-							activeChat={this.state.activeChat} />
-					</Drawer>
-					<ChatView chat={this.state.activeChat} />
-				</Grid>
+	return (
+		<Grid container direction="column" className={classes.root}>
+			<Navigation toggleDrawer={toggleOpenDrawer} />
+			<Grid item className={classes.content} container
+				direction="row" justify="center"
+				alignContent='stretch'>
+				<Drawer open={openDrawer} onClose={() => {setOpenDrawer(false)}}>
+					<ChatDirectory
+						chatRooms={chatRooms}
+						updateActiveChat={updateActiveChat}
+						activeChat={activeChat} />
+				</Drawer>
+				<ChatView chat={activeChat} />
 			</Grid>
-		);
-	}
+		</Grid>
+	);
 }
 
-export default withStyles(styles, { name: "ChatStyles" })(withSnackbar(socketConnect(App)));
+export default withStyles(styles, { name: "ChatStyles" })(App);

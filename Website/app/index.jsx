@@ -1,17 +1,14 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import App from './src/App';
-import { SocketProvider } from 'socket.io-react';
-import io from 'socket.io-client';
-import { SnackbarProvider } from 'notistack';
-
-const socket = io.connect("ws://"+window.location.hostname+":5001");
+import React from "react";
+import ReactDOM from "react-dom";
+import App from "./src/App";
+import { SnackbarProvider } from "notistack";
+import { SocketIOProvider } from "./src/services";
 
 ReactDOM.render(
-	<SocketProvider socket={socket}>
-		<SnackbarProvider maxSnack={3}
-			anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
-			<App />
-		</SnackbarProvider>
-	</SocketProvider>
-	, document.getElementById('root'));
+  <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: "top", horizontal: "right" }}>
+    <SocketIOProvider>
+      <App />
+    </SocketIOProvider>
+  </SnackbarProvider>,
+  document.getElementById("root")
+);

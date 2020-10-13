@@ -1,0 +1,20 @@
+export const SocketEvent = {
+    connect: "connect",
+    disconnect: "disconnect",
+    connect_error: "connect_error",
+    connect_timeout: "connect_timeout",
+    reconnect: "reconnect",
+    reconnect_attempt: "reconnect_attempt",
+    reconnecting: "reconnecting",
+    reconnect_error: "reconnect_error",
+    reconnect_failed: "reconnect_failed",
+    ping: "ping",
+    pong: "pong",
+    getRooms: 'get_rooms',
+    roomList: 'room_list',
+    getId: 'get_id',
+    enterRoom: 'enter_room',
+    leaveRoom: 'leave_room',
+    sendMessage: 'send_message',
+    recvMessage: 'recv_message'
+}

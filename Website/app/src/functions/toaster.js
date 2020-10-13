@@ -1,4 +1,4 @@
-function toastMessage(toastProvider, data) {
+export function toastMessage(toastProvider, data) {
 	if (data.message) {
 		toastProvider(data.message, {
 			variant: data.type ? data.type : "default",
@@ -12,4 +12,3 @@ function toastMessage(toastProvider, data) {
 		});
 	}
 }
-export default toastMessage
